@@ -4,3 +4,4 @@ programming_languages.txt
 computer_networks.txt
 video_games.txt
 cars.txt
+tech_brands.txt

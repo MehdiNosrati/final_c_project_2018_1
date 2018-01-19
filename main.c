@@ -31,7 +31,7 @@ void lists();
 void open(char*);
 struct node * creatlist(char *);
 void  add_end(struct node *, char * );
-char * randomchoose(char *);
+char * randomchoose(char *,int);
 int cntwords(char *);
 void initplayground(int);
 int play(int,char *);
@@ -39,44 +39,59 @@ int corword(char,int, int );
 void quit();
 int roword();
 void topicgen();
+void perso();
 
 int main()
 {
     srand(time(NULL));
     system("color 30");
-
+    int score=0;
     printf("enter name:");
     scanf("%s",u.name);
+
     char * top;
     char matchword [50];
     char choice[50];
+
     //manu
     int op,i;
     int dash;
-    menu();
-    scanf("%d",&op);
-    switch (op)
+
+    while (1)
     {
-    case 1:
-        lists();
+        menu();
+        scanf("%d",&op);
+        int n;
+        switch (op)
+        {
+        case 1:
+            lists();
+            printf("type in topic name:");
+            scanf("%s",choice);
+            open(choice);
+            n=cntwords(choice);
+            //topic start
+            while (words->next!=NULL)
+            {
+                strcpy(matchword,randomchoose(choice,n));
+                n--;
+                dash=strlen(matchword);
+                printf("%s\n",matchword);
+                initplayground(dash);
+                score=play(dash,matchword);
+            }
+            //topic ends
 
-        printf("type in topic name:");
-        scanf("%s",choice);
-        open(choice);
-        strcpy(matchword,randomchoose(choice));
-        dash=strlen(matchword);
-        printf("%s\n",matchword);
-        initplayground(dash);
-        play(dash,matchword);
-
-
-
-        break;
+            break;
         //case 2: load();
 
-        case 3: topicgen();
-    }
+        case 3:
 
+            topicgen();
+
+
+        }
+    }
     /*   while (words->next!=NULL)
        {
            printf("%s\n",words->w);
@@ -153,12 +168,16 @@ void  add_end(struct node *list, char * i)
     newnode->next=NULL;
 
 }
-char * randomchoose(char * choice)
+char * randomchoose(char * choice,int cnw)
 {
-    int i,n;
+    int i,n=0;
     char retword[50];
-    n=cntwords(choice);
-    n=rand()%(n+1);
+
+    if (cnw==1)
+        return words->w;
+    while(n==0)
+        n=rand()%(cnw);
+
     struct node * tmp;
     tmp=words;
     for (i=0; i<n ; i++)
@@ -166,6 +185,7 @@ char * randomchoose(char * choice)
 
     strcpy(retword,tmp->w);
     delnode (tmp);
+
     return retword;
 
 }
@@ -191,11 +211,6 @@ void delnode(struct Node *n)
 
     if(words == n)
     {
-        if(words->next == NULL)
-        {
-            printf("There is only one node. The list can't be made empty ");
-            return;
-        }
 
 
         strcpy(words->w, words->next->w);
@@ -237,32 +252,56 @@ void initplayground(int dash)
 {
     int i;
     for (i=0 ; i<dash ; i++)
-       {
+    {
         pg[i]='-';
         printf(" %c ",pg[i]);
-       }
-        printf("\n");
+    }
+    printf("\n");
 }
 
 int play (int dash,char * mw)
 {
     char tmp[dash];
+    int rep=0;
+    int wrongguess=0;
+    int test=0;
+    char entrd[dash];
     strcpy(tmp,mw);
     char ent;
-    while (1)
+    int remain=dash;
+    int i,j,k;
+    while (remain>0 && wrongguess<6)
     {
+        rep=0;
+        int scr=0;
         ent=getch();
+        for (j=0 ; j<dash ; j++)
+            if (ent==entrd[j])
+            {
+                printf("u have entered this character already ! \n");
+                rep++;
+                continue;
+            }
         if (ent=='Q')
             quit();
-        int i,j,k;
+
         for (i=0 ; i<dash ; i++)
             if (ent==tmp[i])
+            {
                 corword(ent,i,dash);
-       //  else
-              //  roword();   ///last edit
+                entrd[i]=ent;
+                if (rep==0)
+                    remain--;
+                test++;
+            }
+        if (test=0)
+            wrongguess++;
+        printf("(%d / 5)\n",wrongguess);
+        printf("");
 
 
     }
+
 
 
 }
@@ -273,65 +312,67 @@ int corword(char en,int n,int dash)
     int i;
 
     for (i=0 ; i<dash ; i++)
-       if (pg[i]=='-')
-         pg[i]='-';
+        if (pg[i]=='-')
+            pg[i]='-';
 
     pg[n]=en;
     for (i=0 ; i<dash ; i++)
         printf(" %c ",pg[i]);
-    printf("      correct!\n");
+    printf("      correct!");
 }
 
-void quit()
-{
-    printf("\nu sure u want to quit the game? (y/n) ");
-    char op,cp;
-    op=getch();
-    if (op=='y')
+    void quit()
     {
-        printf("\nsave the game? (y/n)");
-        cp=getch();
-        if (cp=='y')
+        printf("\nu sure u want to quit the game? (y/n) ");
+        char op,cp;
+        op=getch();
+        if (op=='y')
         {
-            FILE * save;
-            save=fopen("save.txt","a");
-            fprintf(save,"\n%s",u.name);
-            fclose(save);
-            exit(10);
+            printf("\nsave the game? (y/n)");
+            cp=getch();
+            if (cp=='y')
+            {
+                FILE * save;
+                save=fopen("save.txt","a");
+                fprintf(save,"\n%s",u.name);
+                fclose(save);
+                exit(10);
+
+            }
+            else
+                exit(5);
+
 
         }
         else
-            exit(5);
-
-
+            return;
     }
-    else
-        return;
-}
 
-void topicgen()
-{
-    FILE *topic;
-    printf("\n\n please enter topic name: ");
-    char tname[30];
-    scanf("%s",tname);
+    void topicgen()
+    {
+        FILE *topic;
+        printf("\n\n please enter topic name: ");
+        char tname[30];
+        scanf("%s",tname);
 
-    printf("please enter number of words u want to add");
-    int num;
-    scanf("%d",&num);;
-    printf("\n please enter the words u want to be added into this topic:\n");
-    topic=fopen(tname,"w");
-    int i;
-    char wo[50];
-    for (i=0 ; i<num ; i++)
-        {scanf("%s",wo);
-        fprintf(topic,"%s\n",wo);
+        printf("please enter number of words u want to add");
+        int num;
+        scanf("%d",&num);;
+        printf("\n please enter the words u want to be added into this topic:\n");
+        topic=fopen(tname,"a");
+        int i;
+        char wo[50];
+        for (i=0 ; i<num ; i++)
+        {
+            scanf("%s",wo);
+            fprintf(topic,"%s\n",wo);
         }
-        printf("topic generation dona!");
+        printf("topic generation dona!\n");
         fclose(topic);
         FILE * tpc;
         tpc=fopen("AVAILABLE_TOPICS.txt","a");
         fprintf(tpc,"\n%s",tname);
         fclose(tpc);
-}
+    }
+
 
