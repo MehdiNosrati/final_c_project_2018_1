@@ -1,0 +1,8 @@
+# depslib dependency file v1.0
+1516527717 source:c:\users\user-pc\desktop\term 1\mabanic\proj pt\pt\main.c
+	<stdio.h>
+	<stdlib.h>
+	<time.h>
+	<windows.h>
+	<conio.h>
+
